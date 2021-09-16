@@ -45,12 +45,17 @@ MainWindow::MainWindow(QWidget *parent)
     serialPort = new QSerialPort(this);
     connect(serialPort, SIGNAL(readyRead()), this, SLOT(slot_serialPort_readyRead()));
 
+    // 新建波形显示界面
+    plot = new Plot;
+    plot->show();
+
     qDebug()<<"start..."<<endl;
 
 }
 
 MainWindow::~MainWindow()
 {
+    delete plot;
     delete ui;
 }
 
@@ -275,7 +280,7 @@ void MainWindow::on_checkBoxMultiSend_stateChanged(int arg1)
     }
 }
 
-
+//tab2 轮训多发定时器
 void MainWindow::slot_timerMultiSend_timeout()
 {
     QString strSendData;
@@ -312,17 +317,19 @@ void MainWindow::slot_timerMultiSend_timeout()
         curSendNum += ret;
 }
 
-
+//16进制发送选框，切换发送框内容为编码字符或16进制字节
 void MainWindow::on_checkBoxHexSend_stateChanged(int arg1)
 {
     changeEncodeStrAndHex(ui->plainTextEditSend, arg1);
 }
 
+//16进制接收选框，切换接收框内容为编码字符或16进制字节
 void MainWindow::on_checkBoxHexRec_stateChanged(int arg1)
 {
     changeEncodeStrAndHex(ui->plainTextEditRec, arg1);
 }
 
+//切换内容为编码字符或16进制字节
 void MainWindow::changeEncodeStrAndHex(QPlainTextEdit *plainTextEdit, int arg1)
 {
     QString strRecvData1 = plainTextEdit->toPlainText();
@@ -351,6 +358,7 @@ void MainWindow::changeEncodeStrAndHex(QPlainTextEdit *plainTextEdit, int arg1)
     plainTextEdit->moveCursor(QTextCursor::End);
 }
 
+//串口数据接收
 void MainWindow::slot_serialPort_readyRead(void)
 {
     QByteArray baRecvData = serialPort->readAll();
@@ -368,8 +376,17 @@ void MainWindow::slot_serialPort_readyRead(void)
         strRecvData = QString(ba);
     }
 
-    // 在当前位置插入文本，不会发生换行。如果没有移动光标到文件结尾，会导致文件超出当前界面显示范围，界面也不会向下滚动。
-    ui->plainTextEditRec->insertPlainText(strRecvData);
-    // 移动光标到文本结尾
-    ui->plainTextEditRec->moveCursor(QTextCursor::End);
+    if(ui->checkBoxStopShow->checkState() == Qt::Unchecked)
+    {
+        // 在当前位置插入文本，不会发生换行。如果没有移动光标到文件结尾，会导致文件超出当前界面显示范围，界面也不会向下滚动。
+        ui->plainTextEditRec->insertPlainText(strRecvData);
+        // 移动光标到文本结尾
+        ui->plainTextEditRec->moveCursor(QTextCursor::End);
+    }
+}
+
+// 显示绘图窗口
+void MainWindow::on_actionPlotShow_triggered()
+{
+    plot->show();
 }

@@ -9,6 +9,7 @@
 #include <QTimer>
 #include <QPainter>
 #include <QPlainTextEdit>
+#include "plot.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -44,11 +45,16 @@ private slots:
 
 
 
+    void on_actionPlotShow_triggered();
+
 private:
     void changeEncodeStrAndHex(QPlainTextEdit *plainTextEdit,int arg1);
 
 private:
     Ui::MainWindow *ui;
+
+    // 波形绘图窗口
+    Plot *plot = NULL;// 必须初始化为空，否则后面NEW判断的时候会异常结束
 
     QSerialPort *serialPort;
 

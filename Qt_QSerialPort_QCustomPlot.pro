@@ -1,6 +1,6 @@
 QT       += core gui serialport
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 CONFIG += c++11
 
@@ -18,14 +18,19 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    openserialport.cpp
+    openserialport.cpp \
+    plot.cpp \
+    qcustomplot.cpp
 
 HEADERS += \
     mainwindow.h \
-    openserialport.h
+    openserialport.h \
+    plot.h \
+    qcustomplot.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    plot.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
