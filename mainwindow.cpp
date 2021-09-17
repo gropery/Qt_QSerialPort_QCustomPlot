@@ -140,6 +140,7 @@ void MainWindow::on_pushButtonClearRec_clicked()
     curRecvFrameNum = 0;
     lastRecvFrameNum = 0;
     recvFrameCrcErrNum = 0;
+    recvFrameMissNum = 0;
 }
 
 //清除发送窗口
@@ -167,33 +168,74 @@ void MainWindow::slot_timerUpdateLabel_timeout(void)
     lastSendNum = curSendNum;
     lastRecvNum = curRecvNum;
     lastRecvFrameNum = curRecvFrameNum;
-
     //更新label
     ui->labelSendNum->setText(tr("S: %1").arg(curSendNum));
     ui->labelRecvNum->setText(tr("R: %1").arg(curRecvNum));
     ui->labelRecvFrameNum->setText(tr("FNum: %1").arg(curRecvFrameNum));
+
     ui->labelRecvFrameErrNum->setText(tr("FErr: %1").arg(recvFrameCrcErrNum));
     ui->labelRecvFrameMissNum->setText(tr("FMiss: %1").arg(recvFrameMissNum));
+}
+
+//16进制发送选框，切换发送框内容为编码字符或16进制字节
+void MainWindow::on_checkBoxHexSend_stateChanged(int arg1)
+{
+    changeEncodeStrAndHex(ui->plainTextEditSend, arg1);
+}
+
+//16进制接收选框，切换接收框内容为编码字符或16进制字节
+void MainWindow::on_checkBoxHexRec_stateChanged(int arg1)
+{
+    changeEncodeStrAndHex(ui->plainTextEditRec, arg1);
+}
+
+//切换内容为编码字符或16进制字节
+void MainWindow::changeEncodeStrAndHex(QPlainTextEdit *plainTextEdit, int arg1)
+{
+    QString strRecvData = plainTextEdit->toPlainText();
+    QByteArray ba;
+    QString str;
+
+    // 获取多选框状态，未选为0，选中为2
+    if(arg1 == Qt::Unchecked){
+        // 多选框未勾选，接收区先前接收的16进制数据转换为asc2字符串格式
+        //ba = QByteArray::fromHex(strRecvData1.toUtf8());               //Unicode(UTF8)编码，
+        //str = QString(ba);//QString::fromUtf8(ba);                     //这里bytearray转为string时也可直接赋值，或者QString构造，因为QString存储的UTF-16编码
+        ba = QByteArray::fromHex(strRecvData.toLocal8Bit());             //ANSI(GB2132)编码
+        str =QString::fromLocal8Bit(ba);                                 //这里bytearray转为string一定要指定编码
+    }
+    else{
+        // 多选框勾选，接收区先前接收asc2字符串转换为16进制显示
+        //QByteArray ba = strRecvData1.toUtf8().toHex(' ').toUpper();    // Unicode(UTF8)编码(中国：E4 B8 AD E5 9B BD)
+        ba = strRecvData.toLocal8Bit().toHex(' ').toUpper();             // ANSI(GB2132)编码(中国:D6 D0 B9 FA)
+        str = QString(ba).append(' ');                                   //这里由16进制的bytearray转为string所有编码统一，所以可以直接构造，并没有歧义
+    }
+
+    // 文本控件清屏，显示新文本
+    plainTextEdit->clear();
+    plainTextEdit->insertPlainText(str);
+    // 移动光标到文本结尾
+    plainTextEdit->moveCursor(QTextCursor::End);
 }
 
 //tab1 单次发送按钮槽函数
 void MainWindow::on_pushButtonSingleSend_clicked()
 {
     QString strSendData = ui->plainTextEditSend->toPlainText();
-    QByteArray baSendData;
+    QByteArray ba;
 
-    if(ui->checkBoxHexSend->checkState() == false){
+    if(ui->checkBoxHexSend->checkState() == Qt::Unchecked){
         // 字符串形式发送
-        //baSendData = strSendData.toUtf8();                            // Unicode编码输出
-        baSendData = strSendData.toLocal8Bit();                         // GB2312编码输出,用以兼容大多数单片机
+        //ba = strSendData.toUtf8();                            // Unicode编码输出
+        ba = strSendData.toLocal8Bit();                         // GB2312编码输出,用以兼容大多数单片机
     }else{
         // 16进制发送
-        //baSendData = QByteArray::fromHex(strSendData.toUtf8());       // Unicode编码输出
-        baSendData = QByteArray::fromHex(strSendData.toLocal8Bit());    // GB2312编码输出
+        //ba = QByteArray::fromHex(strSendData.toUtf8());       // Unicode编码输出
+        ba = QByteArray::fromHex(strSendData.toLocal8Bit());    // GB2312编码输出
     }
 
     // 如发送成功，会返回发送的字节长度。失败，返回-1。
-    int ret = serialPort->write(baSendData);
+    int ret = serialPort->write(ba);
 
     if(ret > 0)
         curSendNum += ret;
@@ -204,8 +246,7 @@ void MainWindow::on_checkBoxSingleSend_stateChanged(int arg1)
 {
     int TimerInterval = ui->lineEditSingleSend->text().toInt();
 
-    // 获取复选框状态，未选为0，选中为2
-    if(arg1 == 0){
+    if(arg1 == Qt::Unchecked){
         timerSingleSend->stop();
         ui->lineEditSingleSend->setEnabled(true);
     }else{
@@ -226,7 +267,7 @@ void MainWindow::slot_pushButtonMultiSend_n_clicked()
     //获取信号发送者
     QPushButton *pushButton = qobject_cast<QPushButton *>(sender());
     QString strSendData;
-    QByteArray baSendData;
+    QByteArray ba;
 
     if(pushButton == ui->pushButtonMultiSend_1)
         strSendData = ui->lineEditMultiSend_1->text();
@@ -250,10 +291,10 @@ void MainWindow::slot_pushButtonMultiSend_n_clicked()
         strSendData = ui->lineEditMultiSend_10->text();
 
     // 只16进制发送
-    baSendData = QByteArray::fromHex(strSendData.toLocal8Bit());    // GB2312编码输出
+    ba = QByteArray::fromHex(strSendData.toLocal8Bit());    // GB2312编码输出
 
     // 如发送成功，会返回发送的字节长度。失败，返回-1。
-    int ret = serialPort->write(baSendData);
+    int ret = serialPort->write(ba);
 
     if(ret > 0)
         curSendNum += ret;
@@ -264,8 +305,7 @@ void MainWindow::on_checkBoxMultiSend_stateChanged(int arg1)
 {
     int TimerInterval = ui->lineEditMultiSend->text().toInt();
 
-    // 获取复选框状态，未选为0，选中为2
-    if(arg1 == 0){
+    if(arg1 == Qt::Unchecked){
         timerMultiSend->stop();
         ui->lineEditMultiSend->setEnabled(true);
     }else{
@@ -284,7 +324,7 @@ void MainWindow::on_checkBoxMultiSend_stateChanged(int arg1)
 void MainWindow::slot_timerMultiSend_timeout()
 {
     QString strSendData;
-    QByteArray baSendData;
+    QByteArray ba;
 
     if(ui->checkBoxMultiSend_1->checkState()==Qt::Checked)
         strSendData += ui->lineEditMultiSend_1->text();
@@ -308,81 +348,171 @@ void MainWindow::slot_timerMultiSend_timeout()
         strSendData += ui->lineEditMultiSend_10->text();
 
     // 只16进制发送
-    baSendData = QByteArray::fromHex(strSendData.toLocal8Bit());    // GB2312编码输出
+    ba = QByteArray::fromHex(strSendData.toLocal8Bit());    // GB2312编码输出
 
     // 如发送成功，会返回发送的字节长度。失败，返回-1。
-    int ret = serialPort->write(baSendData);
+    int ret = serialPort->write(ba);
 
     if(ret > 0)
         curSendNum += ret;
-}
-
-//16进制发送选框，切换发送框内容为编码字符或16进制字节
-void MainWindow::on_checkBoxHexSend_stateChanged(int arg1)
-{
-    changeEncodeStrAndHex(ui->plainTextEditSend, arg1);
-}
-
-//16进制接收选框，切换接收框内容为编码字符或16进制字节
-void MainWindow::on_checkBoxHexRec_stateChanged(int arg1)
-{
-    changeEncodeStrAndHex(ui->plainTextEditRec, arg1);
-}
-
-//切换内容为编码字符或16进制字节
-void MainWindow::changeEncodeStrAndHex(QPlainTextEdit *plainTextEdit, int arg1)
-{
-    QString strRecvData1 = plainTextEdit->toPlainText();
-    QByteArray baRecvData;
-    QString strRecvData2;
-
-    // 获取多选框状态，未选为0，选中为2
-    if(arg1 == 0){
-        // 为0时，多选框未勾选，接收区先前接收的16进制数据转换为asc2字符串格式
-        //ba = QByteArray::fromHex(strRecvData1.toUtf8());               //Unicode(UTF8)编码，
-        //str = QString(ba);//QString::fromUtf8(ba);                     //这里bytearray转为string时也可直接赋值，或者QString构造，因为QString存储的UTF-16编码
-        baRecvData = QByteArray::fromHex(strRecvData1.toLocal8Bit());    //ANSI(GB2132)编码
-        strRecvData2 =QString::fromLocal8Bit(baRecvData);                //这里bytearray转为string一定要指定编码
-    }
-    else{
-        // 不为0时，多选框勾选，接收区先前接收asc2字符串转换为16进制显示
-        //QByteArray ba = strRecvData1.toUtf8().toHex(' ').toUpper();     // Unicode(UTF8)编码(中国：E4 B8 AD E5 9B BD)
-        baRecvData = strRecvData1.toLocal8Bit().toHex(' ').toUpper();     // ANSI(GB2132)编码(中国:D6 D0 B9 FA)
-        strRecvData2 = QString(baRecvData);                               //这里由16进制的bytearray转为string所有编码统一，所以可以直接构造，并没有歧义
-    }
-
-    // 文本控件清屏，显示新文本
-    plainTextEdit->clear();
-    plainTextEdit->insertPlainText(strRecvData2);
-    // 移动光标到文本结尾
-    plainTextEdit->moveCursor(QTextCursor::End);
 }
 
 //串口数据接收
 void MainWindow::slot_serialPort_readyRead(void)
 {
     QByteArray baRecvData = serialPort->readAll();
-    QString strRecvData;
+    QString str;
+    QByteArray ba;
+
+    processRecvProtocol(&baRecvData); //调用私有成员函数解析数据协议
 
     curRecvNum += baRecvData.size();
 
-    if(ui->checkBoxHexRec->checkState() == false){
-        // 字符编码显示
-        //QString str = QString::fromUtf8(baRecvData);
-        strRecvData = QString::fromLocal8Bit(baRecvData);   // GB2312编码输入
-    }else{
-        // 16进制显示，用空格分隔，转换为大写
-        QByteArray ba = baRecvData.toHex(' ').toUpper();
-        strRecvData = QString(ba);
-    }
-
     if(ui->checkBoxStopShow->checkState() == Qt::Unchecked)
     {
-        // 在当前位置插入文本，不会发生换行。如果没有移动光标到文件结尾，会导致文件超出当前界面显示范围，界面也不会向下滚动。
-        ui->plainTextEditRec->insertPlainText(strRecvData);
-        // 移动光标到文本结尾
+        if(ui->checkBoxHexRec->checkState() == Qt::Unchecked){
+            // 字符编码显示
+            //str = QString::fromUtf8(baRecvData);      // Unicode编码
+            str = QString::fromLocal8Bit(baRecvData);   // GB2312编码输入
+        }else{
+            // 16进制显示，用空格分隔，转换为大写
+            ba = baRecvData.toHex(' ').toUpper();
+            str = QString(ba).append(' ');
+        }
+
+        // 在当前位置插入文本，不会发生换行。(如果使用appendPlainText，则会自动换行)
+        ui->plainTextEditRec->insertPlainText(str);
+        // 移动光标到文本结尾.使得文本超出当前界面显示范围时，滚动轴自动向下滚动，以显示最新文本
         ui->plainTextEditRec->moveCursor(QTextCursor::End);
+
     }
+}
+
+//对接收数据流进行协议解析
+void MainWindow::processRecvProtocol(QByteArray *baRecvData)
+{
+    int num = baRecvData->size();
+
+    if(showFramData){
+        QString str1 = QString(baRecvData->toHex(' ').toUpper());
+        ui->plainTextEditFrameData->appendPlainText(str1);    //自动换行
+    }
+
+    if(num) {
+        for(int i=0; i<num; i++){
+            switch(STATE) {
+            //查找第一个帧头
+            case FIND_HEADER1:
+                if(baRecvData->at(i) == 0x3A){
+                    STATE = FIND_HEADER2;
+                }
+                break;
+            //查找第二个帧头
+            case FIND_HEADER2:
+                if(baRecvData->at(i) == 0x3B){
+                    //找到第二个帧头
+                    STATE = CHECK_FUNWORD;
+                }
+                else if(baRecvData->at(i) == 0x3A){
+                    //避免漏掉3A 3A 3B xx情况
+                    STATE = FIND_HEADER2;
+                }
+                else
+                    STATE = FIND_HEADER1;
+                break;
+            //检查功能字是否合规
+            case CHECK_FUNWORD:
+                if(baRecvData->at(i) == 0x01){
+                    funWord = baRecvData->at(i);
+                    STATE = CHECK_DATALEN;
+                }
+                else{
+                    funWord = 0;
+                    STATE = FIND_HEADER1;
+                }
+                break;
+            //判断数据长度是否合规
+            case CHECK_DATALEN:
+                if(baRecvData->at(i) <= 32*2){
+                    //限制最大接收长度64字节，即32个ch
+                    dataLen = baRecvData->at(i);
+                    STATE = TAKE_DATA;
+                }
+                else{
+                    dataLen = 0;
+                    STATE = FIND_HEADER1;
+                }
+                break;
+            //接收所有数据
+            case TAKE_DATA:
+                if(dataLenCnt < dataLen){
+                    baRecvDataBuf.append(baRecvData->at(i));
+                    dataLenCnt++;
+                    //满足条件后立刻转入下个状态
+                    if(dataLenCnt >= dataLen){
+                        dataLenCnt = 0;
+                        STATE = CHECK_CRC;
+                    }
+                }
+                break;
+            //CRC校验
+            case CHECK_CRC:
+                crc = 0x3A + 0X3B + funWord + dataLen;
+                for(int c=0; c<dataLen; c++){
+                    crc += baRecvDataBuf[c];
+                }
+
+                //校验通过，数据有效
+                if(crc == baRecvData->at(i)){
+                    if(showPlotData){
+                        QString str2 = QString(baRecvDataBuf.toHex(' ').toUpper());
+                        ui->plainTextEditPlotData->appendPlainText(str2);    //自动换行
+                    }
+
+                    curRecvFrameNum++; //有效帧数量计数
+                }
+                else{
+                    recvFrameCrcErrNum++; //误码帧数量计数
+                }
+
+                //清除暂存数据
+                baRecvDataBuf.clear();
+                funWord=0;
+                dataLen=0;
+                dataLenCnt=0;
+                crc=0;
+                STATE = FIND_HEADER1;
+                break;
+
+
+            default:
+                STATE = FIND_HEADER1;
+                break;
+            }
+        }
+    }
+}
+
+void MainWindow::on_checkBoxFrameData_stateChanged(int arg1)
+{
+    Q_UNUSED(arg1);
+    showFramData = ui->checkBoxFrameData->isChecked();
+}
+
+void MainWindow::on_checkBoxPlotData_stateChanged(int arg1)
+{
+    Q_UNUSED(arg1);
+    showPlotData = ui->checkBoxPlotData->isChecked();
+}
+
+void MainWindow::on_pushButtonClearFramePlotData_clicked()
+{
+    curRecvFrameNum = 0;
+    lastRecvFrameNum=0;
+    recvFrameCrcErrNum = 0;
+    recvFrameMissNum = 0;
+    ui->plainTextEditFrameData->clear();
+    ui->plainTextEditPlotData->clear();
 }
 
 // 显示绘图窗口
@@ -390,3 +520,5 @@ void MainWindow::on_actionPlotShow_triggered()
 {
     plot->show();
 }
+
+
