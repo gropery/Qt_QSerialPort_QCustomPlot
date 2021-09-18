@@ -364,12 +364,13 @@ void MainWindow::slot_serialPort_readyRead(void)
     QString str;
     QByteArray ba;
 
-    processRecvProtocol(&baRecvData); //调用私有成员函数解析数据协议
+    //调用私有成员函数解析数据协议
+    processRecvProtocol(&baRecvData);
 
-    curRecvNum += baRecvData.size();
-
+    //是否显示接收内容
     if(ui->checkBoxStopShow->checkState() == Qt::Unchecked)
     {
+        //以字符或16进制显示
         if(ui->checkBoxHexRec->checkState() == Qt::Unchecked){
             // 字符编码显示
             //str = QString::fromUtf8(baRecvData);      // Unicode编码
@@ -379,12 +380,28 @@ void MainWindow::slot_serialPort_readyRead(void)
             ba = baRecvData.toHex(' ').toUpper();
             str = QString(ba).append(' ');
         }
-
         // 在当前位置插入文本，不会发生换行。(如果使用appendPlainText，则会自动换行)
         ui->plainTextEditRec->insertPlainText(str);
         // 移动光标到文本结尾.使得文本超出当前界面显示范围时，滚动轴自动向下滚动，以显示最新文本
         ui->plainTextEditRec->moveCursor(QTextCursor::End);
 
+        // 判断多长的数据没有换行符，如果超过2000，会人为向数据接收区添加换行，来保证CPU占用率不会过高，不会导致卡顿
+        // 但由于是先插入换行，后插入接收到的数据，所以每一箩数据并不是2000
+        int baRecvDataSize = baRecvData.size();
+        static int cnt=0;
+        if(baRecvData.contains('\n')){
+            cnt=0;
+        }
+        else{
+            cnt += baRecvDataSize;
+            if(cnt > 2000){
+                ui->plainTextEditRec->appendPlainText(""); //添加一个回车换行
+                cnt=0;
+            }
+        }
+
+        //已接收字节统计
+        curRecvNum += baRecvDataSize;
     }
 }
 
