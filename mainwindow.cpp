@@ -367,6 +367,10 @@ void MainWindow::slot_serialPort_readyRead(void)
     //调用私有成员函数解析数据协议
     processRecvProtocol(&baRecvData);
 
+    //已接收字节统计
+    int baRecvDataSize = baRecvData.size();
+    curRecvNum += baRecvDataSize;
+
     //是否显示接收内容
     if(ui->checkBoxStopShow->checkState() == Qt::Unchecked)
     {
@@ -387,7 +391,6 @@ void MainWindow::slot_serialPort_readyRead(void)
 
         // 判断多长的数据没有换行符，如果超过2000，会人为向数据接收区添加换行，来保证CPU占用率不会过高，不会导致卡顿
         // 但由于是先插入换行，后插入接收到的数据，所以每一箩数据并不是2000
-        int baRecvDataSize = baRecvData.size();
         static int cnt=0;
         if(baRecvData.contains('\n')){
             cnt=0;
@@ -399,9 +402,6 @@ void MainWindow::slot_serialPort_readyRead(void)
                 cnt=0;
             }
         }
-
-        //已接收字节统计
-        curRecvNum += baRecvDataSize;
     }
 }
 
