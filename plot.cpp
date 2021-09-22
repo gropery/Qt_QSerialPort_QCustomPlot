@@ -382,7 +382,6 @@ void Plot::on_pushButtonStartPlot_clicked()
     }
 }
 
-//双击listWidgetChannels中的item，显示/隐藏对应曲线
 void Plot::on_listWidgetChannels_itemDoubleClicked(QListWidgetItem *item)
 {
     int graphIdx = ui->listWidgetChannels->currentRow();
@@ -395,5 +394,98 @@ void Plot::on_listWidgetChannels_itemDoubleClicked(QListWidgetItem *item)
         ui->plot->graph(graphIdx)->setVisible(true);
         item->setBackground(Qt::NoBrush);
     }
-    ui->plot->replot();
 }
+
+void Plot::on_listWidgetChannels_currentRowChanged(int currentRow)
+{
+    //曲线可见
+    if(ui->plot->graph(currentRow)->visible())
+        ui->checkBoxCurveVisible->setCheckState(Qt::Checked);
+    else
+        ui->checkBoxCurveVisible->setCheckState(Qt::Unchecked);
+
+    //曲线加粗
+    if(ui->plot->graph(currentRow)->pen().width() == 3)
+        ui->checkBoxCurveBold->setCheckState(Qt::Checked);
+    else
+        ui->checkBoxCurveBold->setCheckState(Qt::Unchecked);
+
+    //颜色设置
+    //获取当前颜色
+    QColor curColor = ui->plot->graph(currentRow)->pen().color();
+    //设置选择框颜色
+    ui->pushButtonCurveColor->setStyleSheet(QString("border:0px solid;background-color: %1;").arg(curColor.name()));
+
+
+
+}
+
+void Plot::on_checkBoxCurveVisible_stateChanged(int arg1)
+{
+    int graphIdx = ui->listWidgetChannels->currentRow();
+    if(graphIdx<0 || graphIdx>channelNumber)
+        return;
+
+    if(arg1 == Qt::Checked){
+        ui->plot->graph(graphIdx)->setVisible(true);
+        ui->listWidgetChannels->item(graphIdx)->setBackground(Qt::NoBrush);
+    }
+    else{
+        ui->plot->graph(graphIdx)->setVisible(false);
+        ui->listWidgetChannels->item(graphIdx)->setBackground(Qt::black);
+    }
+}
+
+void Plot::on_checkBoxCurveBold_stateChanged(int arg1)
+{
+    int graphIdx = ui->listWidgetChannels->currentRow();
+    if(graphIdx<0 || graphIdx>channelNumber)
+        return;
+
+    // 预先读取曲线的颜色
+    QPen pen = ui->plot->graph(graphIdx)->pen();
+
+    if(arg1 == Qt::Checked)
+        pen.setWidth(3);
+    else
+        pen.setWidth(1);
+
+    ui->plot->graph(graphIdx)->setPen(pen);
+}
+
+void Plot::on_pushButtonCurveColor_clicked()
+{
+    int graphIdx = ui->listWidgetChannels->currentRow();
+    if(graphIdx<0 || graphIdx>channelNumber)
+        return;
+
+    // 获取当前颜色
+    QColor curColor = ui->plot->graph(graphIdx)->pen().color();// 由curve曲线获得颜色
+    // 以当前颜色打开调色板，父对象，标题，颜色对话框设置项（显示Alpha透明度通道）
+    QColor color = QColorDialog::getColor(curColor, this,
+                                     tr("颜色对话框"),
+                                     QColorDialog::ShowAlphaChannel);
+    // 判断返回的颜色是否合法。若点击x关闭颜色对话框，会返回QColor(Invalid)无效值，直接使用会导致变为黑色。
+    if(color.isValid()){
+        // 设置选择框颜色
+        ui->pushButtonCurveColor->setStyleSheet(QString("border:0px solid;background-color: %1;").arg(color.name()));
+        // 设置曲线颜色
+        QPen pen = ui->plot->graph(graphIdx)->pen();
+        pen.setBrush(color);
+        ui->plot->graph(graphIdx)->setPen(pen);
+    }
+}
+
+void Plot::on_comboBoxCurveLineStyle_currentIndexChanged(int index)
+{
+
+}
+
+void Plot::on_comboBoxCurveScatterStyle_currentIndexChanged(int index)
+{
+
+}
+
+
+
+

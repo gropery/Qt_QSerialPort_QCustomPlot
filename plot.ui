@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>677</width>
-    <height>330</height>
+    <width>692</width>
+    <height>394</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -219,23 +219,6 @@
       </item>
      </layout>
     </item>
-    <item row="2" column="0" colspan="4">
-     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,8">
-      <item>
-       <widget class="QListWidget" name="listWidgetChannels"/>
-      </item>
-      <item>
-       <widget class="QCustomPlot" name="plot" native="true">
-        <property name="autoFillBackground">
-         <bool>false</bool>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(255, 255, 127);</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
     <item row="1" column="2" colspan="2">
      <spacer name="horizontalSpacer_2">
       <property name="orientation">
@@ -249,6 +232,103 @@
       </property>
      </spacer>
     </item>
+    <item row="2" column="0" colspan="4">
+     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,8">
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QListWidget" name="listWidgetChannels"/>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox">
+          <property name="title">
+           <string>曲线设置</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <widget class="QCheckBox" name="checkBoxCurveVisible">
+             <property name="text">
+              <string>可见</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBoxCurveBold">
+             <property name="text">
+              <string>加粗</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButtonCurveColor">
+             <property name="text">
+              <string>颜色</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBoxCurveLineStyle">
+             <property name="currentIndex">
+              <number>1</number>
+             </property>
+             <item>
+              <property name="text">
+               <string>点</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>线</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>左</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>右</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>中</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>积</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBoxCurveScatterStyle">
+             <item>
+              <property name="text">
+               <string>无散点</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QCustomPlot" name="plot" native="true">
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(255, 255, 127);</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -256,7 +336,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>677</width>
+     <width>692</width>
      <height>21</height>
     </rect>
    </property>

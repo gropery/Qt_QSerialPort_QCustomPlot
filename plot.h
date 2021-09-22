@@ -43,6 +43,12 @@ private slots:
     void on_pushButtonStartPlot_clicked();
 
     void on_listWidgetChannels_itemDoubleClicked(QListWidgetItem *item);
+    void on_listWidgetChannels_currentRowChanged(int currentRow);
+    void on_checkBoxCurveVisible_stateChanged(int arg1);
+    void on_checkBoxCurveBold_stateChanged(int arg1);
+    void on_pushButtonCurveColor_clicked();
+    void on_comboBoxCurveLineStyle_currentIndexChanged(int index);
+    void on_comboBoxCurveScatterStyle_currentIndexChanged(int index);
 
 private:
     Ui::Plot *ui;
