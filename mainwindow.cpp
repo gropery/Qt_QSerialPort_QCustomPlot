@@ -41,6 +41,13 @@ MainWindow::MainWindow(QWidget *parent)
         slot_timerUpdateLabel_timeout();
     });
 
+    // 模拟波形串口输出定时器
+    timerWaveGene = new QTimer;
+    timerWaveGene->setInterval(20);
+    connect(timerWaveGene, &QTimer::timeout, this, [=](){
+        slot_timerWaveGene_timeout();
+    });
+
     // 新建串口对象
     serialPort = new QSerialPort(this);
     connect(serialPort, SIGNAL(readyRead()), this, SLOT(slot_serialPort_readyRead()));
@@ -50,7 +57,6 @@ MainWindow::MainWindow(QWidget *parent)
     plot->show();
 
     qDebug()<<"start..."<<endl;
-
 }
 
 MainWindow::~MainWindow()
@@ -485,6 +491,7 @@ void MainWindow::processRecvProtocol(QByteArray *baRecvData)
                         QString str2 = QString(baRecvDataBuf.toHex(' ').toUpper());
                         ui->plainTextEditPlotData->appendPlainText(str2);    //自动换行
                     }
+                    plot->onNewDataArrived(baRecvDataBuf);
 
                     curRecvFrameNum++; //有效帧数量计数
                 }
@@ -538,4 +545,34 @@ void MainWindow::on_actionPlotShow_triggered()
     plot->show();
 }
 
+void MainWindow::slot_timerWaveGene_timeout()
+{
+    static float x;
+    char y1,y2;
+    char crc;
 
+    x += 0.01;
+    y1 = sin(x)*100;
+    y2 = cos(x)*100;
+    crc = 0x3A+0x3B+0x01+0x02+y1+y2;
+
+    QByteArray ba;
+    ba.append(0x3A).append(0x3B).append(0x01).append(0x02).append(y1).append(y2).append(crc);
+
+    // 如发送成功，会返回发送的字节长度。失败，返回-1。
+    int ret = serialPort->write(ba);
+
+    if(ret > 0)
+        curSendNum += ret;
+}
+
+
+void MainWindow::on_checkBoxWaveGeneStart_stateChanged(int arg1)
+{
+    int TimerInterval = ui->lineEditWaveGeneInterval->text().toInt();
+
+    if(arg1 == Qt::Checked)
+        timerWaveGene->start(TimerInterval);
+    else if(arg1 == Qt::Unchecked)
+        timerWaveGene->stop();
+}

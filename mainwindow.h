@@ -54,7 +54,9 @@ private slots:
 
     void on_actionPlotShow_triggered();     //显示Plot窗口
 
+    void slot_timerWaveGene_timeout();
 
+    void on_checkBoxWaveGeneStart_stateChanged(int arg1);
 
 private:
     void changeEncodeStrAndHex(QPlainTextEdit *plainTextEdit,int arg1); //切换字符编码与16进制
@@ -86,6 +88,8 @@ private:
     QTimer *timerMultiSend;     //定时轮训发送选中的数据
     // Label数据更新-定时器
     QTimer *timerUpdateLabel;
+    // 仿真波形生成-定时器
+    QTimer *timerWaveGene;
 
     //-----------------------
     QByteArray baRecvDataBuf;   //接收数据流暂存
