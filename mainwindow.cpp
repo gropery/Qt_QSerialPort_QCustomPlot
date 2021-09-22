@@ -571,8 +571,13 @@ void MainWindow::on_checkBoxWaveGeneStart_stateChanged(int arg1)
 {
     int TimerInterval = ui->lineEditWaveGeneInterval->text().toInt();
 
-    if(arg1 == Qt::Checked)
+    if(arg1 == Qt::Checked){
+        ui->lineEditWaveGeneInterval->setEnabled(false);
         timerWaveGene->start(TimerInterval);
-    else if(arg1 == Qt::Unchecked)
+    }
+
+    else if(arg1 == Qt::Unchecked){
         timerWaveGene->stop();
+        ui->lineEditWaveGeneInterval->setEnabled(true);
+    }
 }

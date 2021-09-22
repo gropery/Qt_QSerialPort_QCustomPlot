@@ -28,20 +28,21 @@ private slots:
     void slot_plot_legendDoubleClick(QCPLegend*, QCPAbstractLegendItem*, QMouseEvent*);
     void slot_timerUpdatePlotr_timeout();
 
+    void on_checkBoxXTrackAixs_stateChanged(int arg1);
+    void on_checkBoxYAutoScale_stateChanged(int arg1);
+    void on_pushButtonYAutoScale_clicked();
     void on_spinBoxXCurPos_valueChanged(int arg1);
     void on_spinBoxXPoints_valueChanged(int arg1);
     void on_spinBoxYMin_valueChanged(int arg1);
     void on_spinBoxYMax_valueChanged(int arg1);
     void on_spinBoxXTicks_valueChanged(int arg1);
     void on_spinBoxYTicks_valueChanged(int arg1);
-    void on_checkBoxXTrackAixs_stateChanged(int arg1);
-    void on_checkBoxYAutoScale_stateChanged(int arg1);
-    void on_pushButtonYAutoScale_clicked();
-    void on_listWidgetChannels_itemDoubleClicked(QListWidgetItem *item);
+
     void on_pushButtonShowAllCurve_clicked();
     void on_pushButtonClearAllCurve_clicked();
-
     void on_pushButtonStartPlot_clicked();
+
+    void on_listWidgetChannels_itemDoubleClicked(QListWidgetItem *item);
 
 private:
     Ui::Plot *ui;
@@ -51,9 +52,9 @@ private:
     QColor gui_colors[GCP_CUSTOM_LINE_COLORS];
 
     /* Main info */                                                                      // Status connection variable
-    bool flagPlotting;                                                                        // Status plotting variable
-    qint64 dataPointNumber;                                                                  // Keep track of data points
-    int channelNumber;
+    bool isPlotting;             //判断处于绘图进行中                                                           // Status plotting variable
+    qint64 dataPointNumber;      //X轴数据点                                                       // Keep track of data points
+    int channelNumber;           //通道数
 
 
     QTimer timerUpdatePlot;

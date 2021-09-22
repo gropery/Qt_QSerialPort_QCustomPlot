@@ -34,7 +34,7 @@ Plot::Plot(QWidget *parent) :
     },
 
     /* Main vars */
-    flagPlotting(false),
+    isPlotting(false),
     dataPointNumber (0),
     channelNumber(0)
 {
@@ -70,7 +70,7 @@ void Plot::setupPlot()
     //清除图标中所有项目
     ui->plot->clearItems();
 
-    //设置plot背景
+    //设置背景颜色
     ui->plot->setBackground (gui_colors[0]);
 
     //用于高性能模式，去除抗锯齿， (see QCustomPlot real time example)
@@ -90,8 +90,10 @@ void Plot::setupPlot()
     ui->plot->xAxis->setUpperEnding (QCPLineEnding::esSpikeArrow);
     ui->plot->xAxis->setTickLabelColor (gui_colors[2]);
     ui->plot->xAxis->setTickLabelFont (font);
-    /* Range */
+    // 范围
     ui->plot->xAxis->setRange (dataPointNumber - ui->spinBoxXPoints->value(), dataPointNumber);
+    // 设置坐标轴名称
+    ui->plot->xAxis->setLabel("X");
 
     /* Y Axis */
     ui->plot->yAxis->grid()->setPen (QPen(gui_colors[2], 1, Qt::DotLine));
@@ -103,34 +105,30 @@ void Plot::setupPlot()
     ui->plot->yAxis->setUpperEnding (QCPLineEnding::esSpikeArrow);
     ui->plot->yAxis->setTickLabelColor (gui_colors[2]);
     ui->plot->yAxis->setTickLabelFont (font);
-    /* Range */
+    // 范围
     ui->plot->yAxis->setRange (ui->spinBoxYMin->value(), ui->spinBoxYMax->value());
-    /* User can change Y axis tick step with a spin box */
-    //ui->plot->yAxis->setAutoTickStep (false);
-    //ui->plot->yAxis->(ui->spinYStep->value());
+    // 设置坐标轴名称
+    ui->plot->yAxis->setLabel("Y");
 
-    /* User interactions Drag and Zoom are allowed only on X axis, Y is fixed manually by UI control */
-    ui->plot->setInteraction (QCP::iRangeDrag, true);
-    //ui->plot->setInteraction (QCP::iRangeZoom, true);
-    ui->plot->setInteraction (QCP::iSelectPlottables, true);
-    ui->plot->setInteraction (QCP::iSelectLegend, true);
-    ui->plot->axisRect()->setRangeDrag (Qt::Horizontal);
-    ui->plot->axisRect()->setRangeZoom (Qt::Horizontal);
+    // 图表交互
+    ui->plot->setInteraction (QCP::iRangeDrag, true);           //可单击拖拽
+    ui->plot->setInteraction (QCP::iRangeZoom, true);           //可滚轮缩放
+    ui->plot->setInteraction (QCP::iSelectPlottables, true);    //图表内容可选择
+    ui->plot->setInteraction (QCP::iSelectLegend, true);        //图例可选
+    ui->plot->axisRect()->setRangeDrag (Qt::Horizontal);        //水平拖拽
+    ui->plot->axisRect()->setRangeZoom (Qt::Horizontal);        //水平缩放
 
-    /* Legend */
+    // 图例设置
     QFont legendFont;
     legendFont.setPointSize (9);
     ui->plot->legend->setVisible (true);
     ui->plot->legend->setFont (legendFont);
     ui->plot->legend->setBrush (gui_colors[3]);
     ui->plot->legend->setBorderPen (gui_colors[2]);
-    /* By default, the legend is in the inset layout of the main axis rect. So this is how we access it to change legend placement */
+    // 图例位置，右上角
     ui->plot->axisRect()->insetLayout()->setInsetAlignment (0, Qt::AlignTop|Qt::AlignRight);
 }
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
-
-
 
 /**
  * @brief Slot for new data from serial port . Data is comming in QStringList and needs to be parsed
@@ -141,7 +139,7 @@ void Plot::onNewDataArrived(QByteArray baRecvData)
     static int num = 0;
     static int channelIndex = 0;
 
-    if (flagPlotting){
+    if (isPlotting){
         num = baRecvData.size();
 
         for (int i = 0; i < num; i++){
@@ -261,6 +259,27 @@ void Plot::slot_timerUpdatePlotr_timeout()
 }
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+void Plot::on_checkBoxXTrackAixs_stateChanged(int arg1)
+{
+    qDebug()<<"on_checkBoxXTrackAixs_stateChanged";
+}
+
+void Plot::on_checkBoxYAutoScale_stateChanged(int arg1)
+{
+    qDebug()<<"on_checkBoxYAutoScale_stateChanged";
+}
+
+void Plot::on_pushButtonYAutoScale_clicked()
+{
+    ui->plot->yAxis->rescale(true);
+    ui->spinBoxYMax->setValue(int(ui->plot->yAxis->range().upper) * 1.1);
+    ui->spinBoxYMin->setValue(int(ui->plot->yAxis->range().lower) * 1.1);
+}
+
+
+/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+
 /**
  * @brief Spin box controls where the x position displayed
  * @param arg1
@@ -325,44 +344,7 @@ void Plot::on_spinBoxYTicks_valueChanged(int arg1)
     ui->plot->yAxis->ticker()->setTickCount(arg1);
     ui->plot->replot();
 }
-/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-
-
-void Plot::on_checkBoxXTrackAixs_stateChanged(int arg1)
-{
-    qDebug()<<"on_checkBoxXTrackAixs_stateChanged";
-}
-
-void Plot::on_checkBoxYAutoScale_stateChanged(int arg1)
-{
-    qDebug()<<"on_checkBoxYAutoScale_stateChanged";
-}
-
-void Plot::on_pushButtonYAutoScale_clicked()
-{
-    ui->plot->yAxis->rescale(true);
-    ui->spinBoxYMax->setValue(int(ui->plot->yAxis->range().upper) * 1.1);
-    ui->spinBoxYMin->setValue(int(ui->plot->yAxis->range().lower) * 1.1);
-}
-
-void Plot::on_listWidgetChannels_itemDoubleClicked(QListWidgetItem *item)
-{
-    int graphIdx = ui->listWidgetChannels->currentRow();
-
-    if(ui->plot->graph(graphIdx)->visible())
-    {
-        ui->plot->graph(graphIdx)->setVisible(false);
-        item->setBackground(Qt::black);
-    }
-    else
-    {
-        ui->plot->graph(graphIdx)->setVisible(true);
-        item->setBackground(Qt::NoBrush);
-    }
-    ui->plot->replot();
-}
 
 void Plot::on_pushButtonShowAllCurve_clicked()
 {
@@ -387,15 +369,31 @@ void Plot::on_pushButtonClearAllCurve_clicked()
 void Plot::on_pushButtonStartPlot_clicked()
 {
     if(ui->pushButtonStartPlot->isChecked()){
-        qDebug()<<"停止绘图";
+        //启动绘图
         timerUpdatePlot.start(20);
-        flagPlotting = true;
+        isPlotting = true;
         ui->pushButtonStartPlot->setText("停止绘图");
     }
     else{
-        qDebug()<<"开始绘图";
+        //停止绘图
         timerUpdatePlot.stop();
-        flagPlotting = false;
+        isPlotting = false;
         ui->pushButtonStartPlot->setText("开始绘图");
     }
+}
+
+//双击listWidgetChannels中的item，显示/隐藏对应曲线
+void Plot::on_listWidgetChannels_itemDoubleClicked(QListWidgetItem *item)
+{
+    int graphIdx = ui->listWidgetChannels->currentRow();
+
+    if(ui->plot->graph(graphIdx)->visible()){
+        ui->plot->graph(graphIdx)->setVisible(false);
+        item->setBackground(Qt::black);
+    }
+    else{
+        ui->plot->graph(graphIdx)->setVisible(true);
+        item->setBackground(Qt::NoBrush);
+    }
+    ui->plot->replot();
 }
