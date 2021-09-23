@@ -35,7 +35,10 @@ Plot::Plot(QWidget *parent) :
 
     /* Main vars */
     isPlotting(false),
+    isTrackAixs(true),
+    isYAutoScale(false),
     dataPointNumber (0),
+    xAxisPointNumber(1000),
     channelNumber(0)
 {
     ui->setupUi(this);
@@ -53,7 +56,6 @@ Plot::Plot(QWidget *parent) :
     connect (ui->plot, SIGNAL(legendDoubleClick (QCPLegend*, QCPAbstractLegendItem*, QMouseEvent*)), this, SLOT(slot_plot_legendDoubleClick(QCPLegend*, QCPAbstractLegendItem*, QMouseEvent*)));
     /* Connect update timer to replot slot */
     connect (&timerUpdatePlot, SIGNAL (timeout()), this, SLOT (slot_timerUpdatePlotr_timeout()));
-
 
 }
 
@@ -91,7 +93,9 @@ void Plot::setupPlot()
     ui->plot->xAxis->setTickLabelColor (gui_colors[2]);
     ui->plot->xAxis->setTickLabelFont (font);
     // 范围
-    ui->plot->xAxis->setRange (dataPointNumber - ui->spinBoxXPoints->value(), dataPointNumber);
+    xAxisPointNumber = ui->spinBoxXPoints->value();
+    ui->plot->xAxis->setRange (dataPointNumber - xAxisPointNumber, dataPointNumber);
+    ui->spinBoxXCurPos->setEnabled(false);
     // 设置坐标轴名称
     ui->plot->xAxis->setLabel("X");
 
@@ -243,7 +247,7 @@ void Plot::slot_plot_legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem 
             {
                 ui->listWidgetChannels->item(i)->setText(ui->plot->graph(i)->name());
             }
-            ui->plot->replot();
+            ui->plot->replot(QCustomPlot::rpQueuedReplot);
           }
       }
 }
@@ -254,31 +258,54 @@ void Plot::slot_plot_legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem 
  */
 void Plot::slot_timerUpdatePlotr_timeout()
 {
-  ui->plot->xAxis->setRange (dataPointNumber - ui->spinBoxXPoints->value(), dataPointNumber);
-  ui->plot->replot();
+    if(isTrackAixs)
+        ui->plot->xAxis->setRange (dataPointNumber - xAxisPointNumber, dataPointNumber);
+
+    if(isYAutoScale)
+        on_pushButtonYAutoScale_clicked();
+
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 void Plot::on_checkBoxXTrackAixs_stateChanged(int arg1)
 {
-    qDebug()<<"on_checkBoxXTrackAixs_stateChanged";
+    if(arg1 == Qt::Checked){
+        isTrackAixs = true;
+        ui->spinBoxXCurPos->setEnabled(false);
+    }
+    else{
+        isTrackAixs = false;
+        ui->spinBoxXCurPos->setEnabled(true);
+    }
 }
 
 void Plot::on_checkBoxYAutoScale_stateChanged(int arg1)
 {
-    qDebug()<<"on_checkBoxYAutoScale_stateChanged";
+    if(arg1 == Qt::Checked){
+        isYAutoScale = true;
+        ui->spinBoxYMin->setEnabled(false);
+        ui->spinBoxYMax->setEnabled(false);
+    }
+    else{
+        isYAutoScale = false;
+        ui->spinBoxYMin->setEnabled(true);
+        ui->spinBoxYMax->setEnabled(true);
+    }
 }
 
 void Plot::on_pushButtonYAutoScale_clicked()
 {
     ui->plot->yAxis->rescale(true);
-    ui->spinBoxYMax->setValue(int(ui->plot->yAxis->range().upper) * 1.1);
-    ui->spinBoxYMin->setValue(int(ui->plot->yAxis->range().lower) * 1.1);
+    int newYMax = int(ui->plot->yAxis->range().upper*1.1);
+    int newYMin = int(ui->plot->yAxis->range().lower*1.1);
+    ui->spinBoxYMax->setValue(newYMax);
+    ui->spinBoxYMin->setValue(newYMin);
+    on_spinBoxYMax_valueChanged(newYMax);
+    on_spinBoxYMin_valueChanged(newYMin);
 }
 
-
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
 
 /**
  * @brief Spin box controls where the x position displayed
@@ -287,7 +314,7 @@ void Plot::on_pushButtonYAutoScale_clicked()
 void Plot::on_spinBoxXCurPos_valueChanged(int arg1)
 {
     ui->plot->xAxis->setRangeLower(arg1);
-    ui->plot->replot();
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -297,8 +324,10 @@ void Plot::on_spinBoxXCurPos_valueChanged(int arg1)
  */
 void Plot::on_spinBoxXPoints_valueChanged(int arg1)
 {
+    //暂存X轴显示点数
+    xAxisPointNumber = ui->spinBoxXPoints->value();
     ui->plot->xAxis->setRange (dataPointNumber - arg1, dataPointNumber);
-    ui->plot->replot();
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -309,7 +338,7 @@ void Plot::on_spinBoxXPoints_valueChanged(int arg1)
 void Plot::on_spinBoxYMin_valueChanged(int arg1)
 {
     ui->plot->yAxis->setRangeLower (arg1);
-    ui->plot->replot();
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -320,7 +349,7 @@ void Plot::on_spinBoxYMin_valueChanged(int arg1)
 void Plot::on_spinBoxYMax_valueChanged(int arg1)
 {
     ui->plot->yAxis->setRangeUpper (arg1);
-    ui->plot->replot();
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -331,7 +360,7 @@ void Plot::on_spinBoxYMax_valueChanged(int arg1)
 void Plot::on_spinBoxXTicks_valueChanged(int arg1)
 {
     ui->plot->xAxis->ticker()->setTickCount(arg1);
-    ui->plot->replot();
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -342,9 +371,21 @@ void Plot::on_spinBoxXTicks_valueChanged(int arg1)
 void Plot::on_spinBoxYTicks_valueChanged(int arg1)
 {
     ui->plot->yAxis->ticker()->setTickCount(arg1);
-    ui->plot->replot();
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
+
+void Plot::on_checkBoxShowLegend_stateChanged(int arg1)
+{
+    if(arg1){
+        // 显示图表的图例
+        ui->plot->legend->setVisible(true);
+    }else{
+        // 不显示图表的图例
+        ui->plot->legend->setVisible(false);
+    }
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
+}
 
 void Plot::on_pushButtonShowAllCurve_clicked()
 {
@@ -353,16 +394,19 @@ void Plot::on_pushButtonShowAllCurve_clicked()
         ui->plot->graph(i)->setVisible(true);
         ui->listWidgetChannels->item(i)->setBackground(Qt::NoBrush);
     }
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
 void Plot::on_pushButtonClearAllCurve_clicked()
 {
-    ui->plot->clearPlottables();
+    //pPlot1->graph(i)->data().data()->clear(); // 仅仅清除曲线的数据
+    //pPlot1->clearGraphs();                    // 清除图表的所有数据和设置，需要重新设置才能重新绘图
+    ui->plot->clearPlottables();                // 清除图表中所有曲线，需要重新添加曲线才能绘图
     ui->listWidgetChannels->clear();
     channelNumber = 0;
     dataPointNumber = 0;
     setupPlot();
-    ui->plot->replot();
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
 
@@ -394,6 +438,7 @@ void Plot::on_listWidgetChannels_itemDoubleClicked(QListWidgetItem *item)
         ui->plot->graph(graphIdx)->setVisible(true);
         item->setBackground(Qt::NoBrush);
     }
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
 void Plot::on_listWidgetChannels_currentRowChanged(int currentRow)
@@ -416,8 +461,13 @@ void Plot::on_listWidgetChannels_currentRowChanged(int currentRow)
     //设置选择框颜色
     ui->pushButtonCurveColor->setStyleSheet(QString("border:0px solid;background-color: %1;").arg(curColor.name()));
 
+    //线形设置
+    QCPGraph::LineStyle lineStyle = ui->plot->graph(currentRow)->lineStyle();
+    ui->comboBoxCurveLineStyle->setCurrentIndex(int(lineStyle));
 
-
+    //散点样式
+    QCPScatterStyle::ScatterShape scatterShape = ui->plot->graph(currentRow)->scatterStyle().shape();
+    ui->comboBoxCurveScatterStyle->setCurrentIndex(int(scatterShape));
 }
 
 void Plot::on_checkBoxCurveVisible_stateChanged(int arg1)
@@ -434,6 +484,7 @@ void Plot::on_checkBoxCurveVisible_stateChanged(int arg1)
         ui->plot->graph(graphIdx)->setVisible(false);
         ui->listWidgetChannels->item(graphIdx)->setBackground(Qt::black);
     }
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
 void Plot::on_checkBoxCurveBold_stateChanged(int arg1)
@@ -451,6 +502,8 @@ void Plot::on_checkBoxCurveBold_stateChanged(int arg1)
         pen.setWidth(1);
 
     ui->plot->graph(graphIdx)->setPen(pen);
+
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
 void Plot::on_pushButtonCurveColor_clicked()
@@ -474,17 +527,39 @@ void Plot::on_pushButtonCurveColor_clicked()
         pen.setBrush(color);
         ui->plot->graph(graphIdx)->setPen(pen);
     }
+
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
+//选择曲线样式（点、线、左、右、中、积）
 void Plot::on_comboBoxCurveLineStyle_currentIndexChanged(int index)
 {
+    int graphIdx = ui->listWidgetChannels->currentRow();
+    if(graphIdx<0 || graphIdx>channelNumber)
+        return;
 
+    ui->plot->graph(graphIdx)->setLineStyle((QCPGraph::LineStyle)index);
+
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
+//选择散点样式（空心圆、实心圆、正三角、倒三角）
 void Plot::on_comboBoxCurveScatterStyle_currentIndexChanged(int index)
 {
+    int graphIdx = ui->listWidgetChannels->currentRow();
+    if(graphIdx<0 || graphIdx>channelNumber)
+        return;
 
+    if(index <= 10){
+        ui->plot->graph(graphIdx)->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)index, 5)); // 散点样式
+    }else{ // 后面的散点图形略复杂，太小会看不清
+        ui->plot->graph(graphIdx)->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)index, 8)); // 散点样式
+    }
+
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
+
+
 
 
 

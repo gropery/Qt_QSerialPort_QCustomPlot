@@ -552,7 +552,7 @@ void MainWindow::slot_timerWaveGene_timeout()
     char crc;
 
     x += 0.01;
-    y1 = sin(x)*100;
+    y1 = sin(x)*50;
     y2 = cos(x)*100;
     crc = 0x3A+0x3B+0x01+0x02+y1+y2;
 

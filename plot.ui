@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>692</width>
-    <height>394</height>
+    <height>396</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,6 +21,12 @@
        <widget class="QCheckBox" name="checkBoxXTrackAixs">
         <property name="text">
          <string> X轴自动跟随</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="tristate">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -233,11 +239,15 @@
      </spacer>
     </item>
     <item row="2" column="0" colspan="4">
-     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,8">
+     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,12">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QListWidget" name="listWidgetChannels"/>
+         <widget class="QListWidget" name="listWidgetChannels">
+          <property name="currentRow">
+           <number>-1</number>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QGroupBox" name="groupBox">
@@ -255,7 +265,7 @@
            <item>
             <widget class="QCheckBox" name="checkBoxCurveBold">
              <property name="text">
-              <string>加粗</string>
+              <string>加粗(不推荐)</string>
              </property>
             </widget>
            </item>
@@ -309,6 +319,145 @@
               <property name="text">
                <string>无散点</string>
               </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssNone.png</normaloff>:/images/picScatterStyle/ssNone.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>点形</string>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssDisc.png</normaloff>:/images/picScatterStyle/ssDisc.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>x形</string>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssCross.png</normaloff>:/images/picScatterStyle/ssCross.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>+形</string>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssPlus.png</normaloff>:/images/picScatterStyle/ssPlus.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>空心圆</string>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssCircle.png</normaloff>:/images/picScatterStyle/ssCircle.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>实心圆</string>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssDisc.png</normaloff>:/images/picScatterStyle/ssDisc.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>矩形</string>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssSquare.png</normaloff>:/images/picScatterStyle/ssSquare.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>菱形</string>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssDiamond.png</normaloff>:/images/picScatterStyle/ssDiamond.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>星形</string>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssStar.png</normaloff>:/images/picScatterStyle/ssStar.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>正三角</string>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssTriangle.png</normaloff>:/images/picScatterStyle/ssTriangle.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>倒三角</string>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssTriangleInverted.png</normaloff>:/images/picScatterStyle/ssTriangleInverted.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>x框</string>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssCrossSquare.png</normaloff>:/images/picScatterStyle/ssCrossSquare.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>+框</string>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssPlusSquare.png</normaloff>:/images/picScatterStyle/ssPlusSquare.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>x圆</string>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssCrossCircle.png</normaloff>:/images/picScatterStyle/ssCrossCircle.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>+圆</string>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssPlusCircle.png</normaloff>:/images/picScatterStyle/ssPlusCircle.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>和平</string>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/picScatterStyle/ssPeace.png</normaloff>:/images/picScatterStyle/ssPeace.png</iconset>
+              </property>
              </item>
             </widget>
            </item>
@@ -351,6 +500,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -791,7 +791,7 @@
            <item>
             <widget class="QLineEdit" name="lineEditWaveGeneInterval">
              <property name="text">
-              <string>20</string>
+              <string>10</string>
              </property>
             </widget>
            </item>

@@ -38,6 +38,7 @@ private slots:
     void on_spinBoxXTicks_valueChanged(int arg1);
     void on_spinBoxYTicks_valueChanged(int arg1);
 
+    void on_checkBoxShowLegend_stateChanged(int arg1);
     void on_pushButtonShowAllCurve_clicked();
     void on_pushButtonClearAllCurve_clicked();
     void on_pushButtonStartPlot_clicked();
@@ -50,6 +51,7 @@ private slots:
     void on_comboBoxCurveLineStyle_currentIndexChanged(int index);
     void on_comboBoxCurveScatterStyle_currentIndexChanged(int index);
 
+
 private:
     Ui::Plot *ui;
 
@@ -57,15 +59,19 @@ private:
     QColor line_colors[CUSTOM_LINE_COLORS];
     QColor gui_colors[GCP_CUSTOM_LINE_COLORS];
 
-    /* Main info */                                                                      // Status connection variable
-    bool isPlotting;             //判断处于绘图进行中                                                           // Status plotting variable
-    qint64 dataPointNumber;      //X轴数据点                                                       // Keep track of data points
+    /* Main info */
+    bool isPlotting;             //判断处于绘图进行中
+    bool isTrackAixs;
+    bool isYAutoScale;
+    qint64 dataPointNumber;      //X轴总计数据点
+    int xAxisPointNumber;        //X轴显示点数
     int channelNumber;           //通道数
 
 
     QTimer timerUpdatePlot;
 
     void setupPlot();
+
 public:
     void onNewDataArrived(QByteArray baRecvData);                                           // Slot for new data from serial port
 
