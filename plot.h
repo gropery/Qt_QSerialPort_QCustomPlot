@@ -69,6 +69,7 @@ private:
 
 
     QTimer timerUpdatePlot;
+    QTimer timerUpdateAxisToSpinBox;
 
     void setupPlot();
 

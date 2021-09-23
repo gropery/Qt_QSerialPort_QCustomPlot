@@ -57,6 +57,13 @@ Plot::Plot(QWidget *parent) :
     /* Connect update timer to replot slot */
     connect (&timerUpdatePlot, SIGNAL (timeout()), this, SLOT (slot_timerUpdatePlotr_timeout()));
 
+    // 更新坐标轴至spinbox-定时器
+    timerUpdateAxisToSpinBox.start(500);
+    connect (&timerUpdateAxisToSpinBox, &QTimer::timeout, this, [=](){
+        ui->spinBoxXCurPos->setValue(ui->plot->xAxis->range().lower);
+        ui->spinBoxYMax->setValue(ui->plot->yAxis->range().upper);
+        ui->spinBoxYMin->setValue(ui->plot->yAxis->range().lower);
+    });
 }
 
 Plot::~Plot()
@@ -119,8 +126,8 @@ void Plot::setupPlot()
     ui->plot->setInteraction (QCP::iRangeZoom, true);           //可滚轮缩放
     ui->plot->setInteraction (QCP::iSelectPlottables, true);    //图表内容可选择
     ui->plot->setInteraction (QCP::iSelectLegend, true);        //图例可选
-    ui->plot->axisRect()->setRangeDrag (Qt::Horizontal);        //水平拖拽
-    ui->plot->axisRect()->setRangeZoom (Qt::Horizontal);        //水平缩放
+    ui->plot->axisRect()->setRangeDrag (Qt::Horizontal|Qt::Vertical);  //水平拖拽
+    ui->plot->axisRect()->setRangeZoom (Qt::Vertical);        //水平缩放
 
     // 图例设置
     QFont legendFont;
@@ -179,10 +186,10 @@ void Plot::onNewDataArrived(QByteArray baRecvData)
  */
 void Plot::slot_plot_mouseWheel (QWheelEvent *event)
 {
-  QWheelEvent inverted_event = QWheelEvent(event->posF(), event->globalPosF(),
-                                           -event->pixelDelta(), -event->angleDelta(),
-                                           0, Qt::Vertical, event->buttons(), event->modifiers());
-  QApplication::sendEvent (ui->spinBoxXPoints, &inverted_event);
+//  QWheelEvent inverted_event = QWheelEvent(event->posF(), event->globalPosF(),
+//                                           -event->pixelDelta(), -event->angleDelta(),
+//                                           0, Qt::Vertical, event->buttons(), event->modifiers());
+//  QApplication::sendEvent (ui->spinBoxXPoints, &inverted_event);
 }
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -258,8 +265,10 @@ void Plot::slot_plot_legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem 
  */
 void Plot::slot_timerUpdatePlotr_timeout()
 {
-    if(isTrackAixs)
+    if(isTrackAixs){
+        ui->spinBoxXCurPos->setValue(dataPointNumber);
         ui->plot->xAxis->setRange (dataPointNumber - xAxisPointNumber, dataPointNumber);
+    }
 
     if(isYAutoScale)
         on_pushButtonYAutoScale_clicked();
@@ -301,8 +310,8 @@ void Plot::on_pushButtonYAutoScale_clicked()
     int newYMin = int(ui->plot->yAxis->range().lower*1.1);
     ui->spinBoxYMax->setValue(newYMax);
     ui->spinBoxYMin->setValue(newYMin);
-    on_spinBoxYMax_valueChanged(newYMax);
-    on_spinBoxYMin_valueChanged(newYMin);
+    ui->plot->yAxis->setRange(newYMin,newYMax);
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -313,8 +322,14 @@ void Plot::on_pushButtonYAutoScale_clicked()
  */
 void Plot::on_spinBoxXCurPos_valueChanged(int arg1)
 {
-    ui->plot->xAxis->setRangeLower(arg1);
-    ui->plot->replot(QCustomPlot::rpQueuedReplot);
+    Q_UNUSED(arg1);
+
+    if(!isTrackAixs){
+        double newXMin = ui->spinBoxXCurPos->value();
+        double newXNumber = ui->spinBoxXPoints->value();
+        ui->plot->xAxis->setRange (newXMin, newXMin+newXNumber);
+        ui->plot->replot(QCustomPlot::rpQueuedReplot);
+    }
 }
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -325,9 +340,14 @@ void Plot::on_spinBoxXCurPos_valueChanged(int arg1)
 void Plot::on_spinBoxXPoints_valueChanged(int arg1)
 {
     //暂存X轴显示点数
-    xAxisPointNumber = ui->spinBoxXPoints->value();
-    ui->plot->xAxis->setRange (dataPointNumber - arg1, dataPointNumber);
-    ui->plot->replot(QCustomPlot::rpQueuedReplot);
+    xAxisPointNumber = arg1;
+
+    if(!isTrackAixs){
+        double newXMin = ui->spinBoxXCurPos->value();
+        double newXNumber = ui->spinBoxXPoints->value();
+        ui->plot->xAxis->setRange (newXMin, newXMin+newXNumber);
+        ui->plot->replot(QCustomPlot::rpQueuedReplot);
+    }
 }
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
