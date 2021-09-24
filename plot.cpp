@@ -546,6 +546,10 @@ void Plot::on_pushButtonCurveColor_clicked()
         QPen pen = ui->plot->graph(graphIdx)->pen();
         pen.setBrush(color);
         ui->plot->graph(graphIdx)->setPen(pen);
+        // 设置legend文本颜色
+        ui->plot->legend->item (graphIdx)->setTextColor(color);
+        // 设置listwidget文本颜色
+        ui->listWidgetChannels->item(graphIdx)->setForeground(QBrush(color));
     }
 
     ui->plot->replot(QCustomPlot::rpQueuedReplot);
