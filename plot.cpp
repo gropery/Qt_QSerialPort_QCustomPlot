@@ -266,7 +266,7 @@ void Plot::slot_plot_legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem 
 void Plot::slot_timerUpdatePlotr_timeout()
 {
     if(isTrackAixs){
-        ui->spinBoxXCurPos->setValue(dataPointNumber);
+        //ui->spinBoxXCurPos->setValue(dataPointNumber);
         ui->plot->xAxis->setRange (dataPointNumber - xAxisPointNumber, dataPointNumber);
     }
 
@@ -308,8 +308,8 @@ void Plot::on_pushButtonYAutoScale_clicked()
     ui->plot->yAxis->rescale(true);
     int newYMax = int(ui->plot->yAxis->range().upper*1.1);
     int newYMin = int(ui->plot->yAxis->range().lower*1.1);
-    ui->spinBoxYMax->setValue(newYMax);
-    ui->spinBoxYMin->setValue(newYMin);
+    //ui->spinBoxYMax->setValue(newYMax);
+    //ui->spinBoxYMin->setValue(newYMin);
     ui->plot->yAxis->setRange(newYMin,newYMax);
     ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
@@ -324,12 +324,10 @@ void Plot::on_spinBoxXCurPos_valueChanged(int arg1)
 {
     Q_UNUSED(arg1);
 
-    if(!isTrackAixs){
-        double newXMin = ui->spinBoxXCurPos->value();
-        double newXNumber = ui->spinBoxXPoints->value();
-        ui->plot->xAxis->setRange (newXMin, newXMin+newXNumber);
-        ui->plot->replot(QCustomPlot::rpQueuedReplot);
-    }
+    double newXMin = ui->spinBoxXCurPos->value();
+    double newXNumber = ui->spinBoxXPoints->value();
+    ui->plot->xAxis->setRange (newXMin, newXMin+newXNumber);
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -342,12 +340,10 @@ void Plot::on_spinBoxXPoints_valueChanged(int arg1)
     //暂存X轴显示点数
     xAxisPointNumber = arg1;
 
-    if(!isTrackAixs){
-        double newXMin = ui->spinBoxXCurPos->value();
-        double newXNumber = ui->spinBoxXPoints->value();
-        ui->plot->xAxis->setRange (newXMin, newXMin+newXNumber);
-        ui->plot->replot(QCustomPlot::rpQueuedReplot);
-    }
+    double newXMin = ui->spinBoxXCurPos->value();
+    double newXNumber = ui->spinBoxXPoints->value();
+    ui->plot->xAxis->setRange (newXMin, newXMin+newXNumber);
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -583,8 +579,39 @@ void Plot::on_comboBoxCurveScatterStyle_currentIndexChanged(int index)
     ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
+void Plot::on_radioButtonRangeZoomX_toggled(bool checked)
+{
+    if(checked)
+        ui->plot->axisRect()->setRangeZoom (Qt::Horizontal);
+}
 
 
+void Plot::on_radioButtonRangeZoomY_toggled(bool checked)
+{
+    if(checked)
+        ui->plot->axisRect()->setRangeZoom (Qt::Vertical);
+}
 
+void Plot::on_radioButtonRangeZoomXY_toggled(bool checked)
+{
+    if(checked)
+        ui->plot->axisRect()->setRangeZoom (Qt::Horizontal|Qt::Vertical);
+}
 
+void Plot::on_radioButtonRangeDragX_toggled(bool checked)
+{
+    if(checked)
+        ui->plot->axisRect()->setRangeDrag (Qt::Horizontal);
+}
 
+void Plot::on_radioButtonRangeDragY_toggled(bool checked)
+{
+    if(checked)
+        ui->plot->axisRect()->setRangeDrag (Qt::Vertical);
+}
+
+void Plot::on_radioButtonRangeDragXY_toggled(bool checked)
+{
+    if(checked)
+        ui->plot->axisRect()->setRangeDrag (Qt::Horizontal|Qt::Vertical);
+}

@@ -51,6 +51,12 @@ private slots:
     void on_comboBoxCurveLineStyle_currentIndexChanged(int index);
     void on_comboBoxCurveScatterStyle_currentIndexChanged(int index);
 
+    void on_radioButtonRangeZoomX_toggled(bool checked);
+    void on_radioButtonRangeZoomY_toggled(bool checked);
+    void on_radioButtonRangeZoomXY_toggled(bool checked);
+    void on_radioButtonRangeDragX_toggled(bool checked);
+    void on_radioButtonRangeDragY_toggled(bool checked);
+    void on_radioButtonRangeDragXY_toggled(bool checked);
 
 private:
     Ui::Plot *ui;
