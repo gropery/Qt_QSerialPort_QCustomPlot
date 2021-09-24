@@ -58,6 +58,8 @@ private slots:
     void on_radioButtonRangeDragY_toggled(bool checked);
     void on_radioButtonRangeDragXY_toggled(bool checked);
 
+    void on_horizontalScrollBar_valueChanged(int value);
+
 private:
     Ui::Plot *ui;
 

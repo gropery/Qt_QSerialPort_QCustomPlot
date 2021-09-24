@@ -63,6 +63,10 @@ Plot::Plot(QWidget *parent) :
         ui->spinBoxXCurPos->setValue(ui->plot->xAxis->range().lower);
         ui->spinBoxYMax->setValue(ui->plot->yAxis->range().upper);
         ui->spinBoxYMin->setValue(ui->plot->yAxis->range().lower);
+
+        ui->horizontalScrollBar->setRange(0,dataPointNumber);
+        ui->horizontalScrollBar->setPageStep(xAxisPointNumber);
+        ui->horizontalScrollBar->setValue(ui->plot->xAxis->range().lower);
     });
 }
 
@@ -585,7 +589,6 @@ void Plot::on_radioButtonRangeZoomX_toggled(bool checked)
         ui->plot->axisRect()->setRangeZoom (Qt::Horizontal);
 }
 
-
 void Plot::on_radioButtonRangeZoomY_toggled(bool checked)
 {
     if(checked)
@@ -615,3 +618,10 @@ void Plot::on_radioButtonRangeDragXY_toggled(bool checked)
     if(checked)
         ui->plot->axisRect()->setRangeDrag (Qt::Horizontal|Qt::Vertical);
 }
+
+void Plot::on_horizontalScrollBar_valueChanged(int value)
+{
+    ui->spinBoxXCurPos->setValue(value);
+}
+
+
