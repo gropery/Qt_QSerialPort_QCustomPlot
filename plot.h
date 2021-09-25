@@ -54,6 +54,7 @@ private slots:
     void on_pushButtonShowAllCurve_clicked();
     void on_pushButtonClearAllCurve_clicked();
     void on_pushButtonStartPlot_clicked();
+    void on_pushButtonSavePng_clicked();
 
     // 曲线列表参数设置
     void on_listWidgetChannels_itemDoubleClicked(QListWidgetItem *item);

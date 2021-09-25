@@ -61,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    closeCsvFile();
     delete plot;
     delete ui;
 }
@@ -118,6 +119,13 @@ void MainWindow::on_pushButtonOpenPort_clicked()
             ui->comboBoxStopBits->setEnabled(false);
             ui->comboBoxDataBits->setEnabled(false);
             ui->comboBoxParity->setEnabled(false);
+
+            if(ui->actionSaveCsv->isChecked()){
+                //以当前日期时间戳创建CSV文件
+                openCsvFile();
+            }
+            //串口使用过程中锁定保存按钮不可用
+            ui->actionSaveCsv->setEnabled(false);
         }else{
             QMessageBox::critical(this, "错误提示", "串口打开失败！！！\r\n\r\n该串口可能被占用，请选择正确的串口\r\n或者波特率过高，超出硬件支持范围");
         }
@@ -130,6 +138,9 @@ void MainWindow::on_pushButtonOpenPort_clicked()
         ui->comboBoxStopBits->setEnabled(true);
         ui->comboBoxDataBits->setEnabled(true);
         ui->comboBoxParity->setEnabled(true);
+        //关闭文件
+        closeCsvFile();
+        ui->actionSaveCsv->setEnabled(true);
     }
 }
 
@@ -492,6 +503,7 @@ void MainWindow::processRecvProtocol(QByteArray *baRecvData)
                         ui->plainTextEditPlotData->appendPlainText(str2);    //自动换行
                     }
                     plot->onNewDataArrived(baRecvDataBuf);
+                    saveCsvFile(baRecvDataBuf);
 
                     curRecvFrameNum++; //有效帧数量计数
                 }
@@ -516,6 +528,7 @@ void MainWindow::processRecvProtocol(QByteArray *baRecvData)
         }
     }
 }
+//-----------------------
 
 void MainWindow::on_checkBoxFrameData_stateChanged(int arg1)
 {
@@ -579,5 +592,46 @@ void MainWindow::on_checkBoxWaveGeneStart_stateChanged(int arg1)
     else if(arg1 == Qt::Unchecked){
         timerWaveGene->stop();
         ui->lineEditWaveGeneInterval->setEnabled(true);
+    }
+}
+
+//打开文件
+void MainWindow::openCsvFile(void)
+{
+    m_csvFile = new QFile(QDateTime::currentDateTime().toString("yyyy-MM-d-HH-mm-ss-")+"data-out.csv");
+    if(!m_csvFile)
+      return;
+    if (!m_csvFile->open(QIODevice::ReadWrite | QIODevice::Text))
+      return;
+    m_csvFileTextStream = new QTextStream(m_csvFile);
+}
+
+//关闭文件
+void MainWindow::closeCsvFile(void)
+{
+    if(!m_csvFile)
+        return;
+
+    m_csvFile->close();
+
+    if(m_csvFile)
+        delete m_csvFile;
+    if(m_csvFileTextStream)
+        delete m_csvFileTextStream;
+    m_csvFile = nullptr;
+    m_csvFileTextStream = nullptr;
+}
+
+//保存CRC正确数据至文件
+void MainWindow::saveCsvFile(QByteArray baRecvData)
+{
+    if(!m_csvFile)
+        return;
+    if(ui->actionSaveCsv->isChecked())
+    {
+        QByteArray ba = baRecvData.toHex(' ').toUpper();
+        QString str(ba);
+        *m_csvFileTextStream << str;
+        *m_csvFileTextStream << "\n";
     }
 }

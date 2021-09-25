@@ -35,7 +35,7 @@ private slots:
     void on_pushButtonOpenPort_clicked();           //打开串口
     void on_pushButtonClearRec_clicked();           //清除接收
     void on_pushButtonClearSend_clicked();          //清除发送
-    void slot_timerUpdateLabel_timeout();           //数据更新定时器槽函数
+    void slot_timerUpdateLabel_timeout();           //统计数据更新定时器槽函数
 
     void on_checkBoxHexRec_stateChanged(int arg1);      //16进制接收
     void on_checkBoxHexSend_stateChanged(int arg1);     //16进制发送
@@ -51,12 +51,10 @@ private slots:
     void on_checkBoxPlotData_stateChanged(int arg1);        //tab3 显示Plot数据
     void on_pushButtonClearFramePlotData_clicked();         //清除Frame和Plot窗口内容
 
+    void slot_timerWaveGene_timeout();                      //tab4 仿真波形定时器
+    void on_checkBoxWaveGeneStart_stateChanged(int arg1);   //tab4 仿真波形开始
 
     void on_actionPlotShow_triggered();     //显示Plot窗口
-
-    void slot_timerWaveGene_timeout();
-
-    void on_checkBoxWaveGeneStart_stateChanged(int arg1);
 
 private:
     void changeEncodeStrAndHex(QPlainTextEdit *plainTextEdit,int arg1); //切换字符编码与16进制
@@ -64,7 +62,6 @@ private:
 
 private:
     Ui::MainWindow *ui;
-
 
     //-----------------------
     QSerialPort *serialPort;
@@ -106,5 +103,12 @@ private:
     // 波形绘图窗口
     Plot *plot = NULL;// 必须初始化为空，否则后面NEW判断的时候会异常结束
 
+    //-----------------------
+    //CSV file to save data
+    QFile *m_csvFile = nullptr;
+    QTextStream *m_csvFileTextStream = nullptr;
+    void openCsvFile(void);
+    void closeCsvFile(void);
+    void saveCsvFile(QByteArray baRecvData);
 };
 #endif // MAINWINDOW_H

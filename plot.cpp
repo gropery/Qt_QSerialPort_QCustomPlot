@@ -453,6 +453,13 @@ void Plot::on_pushButtonStartPlot_clicked()
 }
 
 //------------------------------------------------------------------
+// 在exe目录下保存波形截图
+void Plot::on_pushButtonSavePng_clicked()
+{
+    ui->plot->savePng (QString::number(dataPointNumber) + ".png", 1920, 1080, 2, 50);
+}
+
+//------------------------------------------------------------------
 // 双击列表框中曲线隐藏/显示plot曲线（已隐藏曲线背景为黑色）
 void Plot::on_listWidgetChannels_itemDoubleClicked(QListWidgetItem *item)
 {

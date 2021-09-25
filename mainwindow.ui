@@ -945,6 +945,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionPlotShow"/>
+   <addaction name="actionSaveCsv"/>
   </widget>
   <action name="actionPlotShow">
    <property name="text">
@@ -955,6 +956,14 @@
    </property>
    <property name="visible">
     <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionSaveCsv">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>保存数据</string>
    </property>
   </action>
  </widget>

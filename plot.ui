@@ -300,6 +300,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonSavePng">
+        <property name="text">
+         <string>波形截图</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item row="2" column="0" colspan="3">
@@ -561,7 +568,7 @@
      <x>0</x>
      <y>0</y>
      <width>853</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -571,7 +578,7 @@
   <customwidget>
    <class>QCustomPlot</class>
    <extends>QWidget</extends>
-   <header>qcustomplot.h</header>
+   <header location="global">qcustomplot/qcustomplot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
